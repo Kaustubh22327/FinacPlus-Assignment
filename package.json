@@ -8,8 +8,8 @@
     "dev:mf": "cd music-library-mf && pnpm dev",
     "dev:all": "concurrently \"pnpm dev:mf\" \"pnpm dev\"",
     "build": "tsc -b && vite build",
-    "build:mf": "cd music-library-mf && pnpm build",
-    "build:all": "pnpm build:mf && pnpm build",
+    "build:mf": "cd music-library-mf && npm run build",
+    "build:all": "npm run build:mf && npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
