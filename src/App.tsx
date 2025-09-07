@@ -4,6 +4,7 @@ import { AuthProvider} from './contexts/AuthContext';
 import Login from './components/Login';
 import Layout from './components/Layout';
 import AuthGuard from './components/AuthGuard';
+import NotificationSystem from './components/NotificationSystem';
 import './App.css';
 
 const MusicLibrary = lazy(() => import('./components/MusicLibraryWrapper'));
@@ -36,6 +37,7 @@ function App() {
       <Router>
         <div className="App">
           <AppRoutes />
+          <NotificationSystem />
         </div>
       </Router>
     </AuthProvider>

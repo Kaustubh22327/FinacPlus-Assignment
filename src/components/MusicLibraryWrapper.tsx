@@ -1,5 +1,16 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+
+// Song type definition
+interface Song {
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
+  year: number;
+  genre: string;
+  duration: string;
+}
 
 const RemoteMusicLibrary = React.lazy(() => 
   import('musicLibrary/MusicLibrary').catch(() => {
@@ -25,6 +36,63 @@ const RemoteMusicLibrary = React.lazy(() =>
 
 const MusicLibraryWrapper: React.FC = () => {
   const { isAuthenticated, isAdmin } = useAuth();
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load songs from localStorage on component mount
+  useEffect(() => {
+    const savedSongs = localStorage.getItem('musicLibrarySongs');
+    if (savedSongs) {
+      try {
+        setSongs(JSON.parse(savedSongs));
+      } catch (error) {
+        console.error('Error loading songs from localStorage:', error);
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Save songs to localStorage whenever songs change
+  useEffect(() => {
+    if (!isLoading) {
+      localStorage.setItem('musicLibrarySongs', JSON.stringify(songs));
+    }
+  }, [songs, isLoading]);
+
+  const handleAddSong = (newSong: Omit<Song, 'id'>) => {
+    const song: Song = {
+      ...newSong,
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
+    };
+    
+    setSongs(prevSongs => [...prevSongs, song]);
+    
+    // Show success message
+    const event = new CustomEvent('showNotification', {
+      detail: {
+        message: `Song "${song.title}" added successfully!`,
+        type: 'success'
+      }
+    });
+    window.dispatchEvent(event);
+  };
+
+  const handleDeleteSong = (songId: string) => {
+    const songToDelete = songs.find(song => song.id === songId);
+    
+    setSongs(prevSongs => prevSongs.filter(song => song.id !== songId));
+    
+    // Show success message
+    if (songToDelete) {
+      const event = new CustomEvent('showNotification', {
+        detail: {
+          message: `Song "${songToDelete.title}" deleted successfully!`,
+          type: 'success'
+        }
+      });
+      window.dispatchEvent(event);
+    }
+  };
 
   if (!isAuthenticated) {
     return null;
@@ -35,7 +103,7 @@ const MusicLibraryWrapper: React.FC = () => {
       fallback={
         <div className="flex justify-center items-center min-h-96 p-4">
           <div className="text-center max-w-lg bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mx-auto mb-6"></div>
+            <div className="spinner mx-auto mb-6"></div>
             <h3 className="text-gray-800 text-xl font-semibold mb-2">Loading Music Library</h3>
             <p className="text-gray-600 mb-4">Connecting to micro frontend...</p>
           </div>
@@ -44,12 +112,9 @@ const MusicLibraryWrapper: React.FC = () => {
     >
       <RemoteMusicLibrary 
         isAdmin={isAdmin}
-        onAddSong={(song: any) => {
-          console.log('Adding song:', song);
-        }}
-        onDeleteSong={(id: string) => {
-          console.log('Deleting song:', id);
-        }}
+        songs={songs}
+        onAddSong={handleAddSong}
+        onDeleteSong={handleDeleteSong}
       />
     </Suspense>
   );

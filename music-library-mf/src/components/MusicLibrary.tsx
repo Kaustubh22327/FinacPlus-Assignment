@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Song, SortField, GroupByField, SortOrder } from '../types';
 import { mockSongs } from '../data/mockSongs';
 import { 
@@ -15,17 +15,27 @@ import {
 
 interface MusicLibraryProps {
   isAdmin?: boolean;
+  songs?: Song[];
   onAddSong?: (song: Omit<Song, 'id'>) => void;
   onDeleteSong?: (id: string) => void;
 }
 
 const MusicLibrary: React.FC<MusicLibraryProps> = ({ 
-  isAdmin = false, 
+  isAdmin = false,
+  songs: propSongs,
   onAddSong, 
   onDeleteSong 
 }) => {
-  const [songs, setSongs] = useState<Song[]>(mockSongs);
+  const [songs, setSongs] = useState<Song[]>(propSongs || mockSongs);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Sync songs when propSongs changes
+  useEffect(() => {
+    if (propSongs) {
+      setSongs(propSongs);
+    }
+  }, [propSongs]);
+
   const [sortField, setSortField] = useState<SortField>('title');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [groupBy, setGroupBy] = useState<GroupByField | null>(null);
