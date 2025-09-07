@@ -112,7 +112,6 @@ const MusicLibraryWrapper: React.FC = () => {
     >
       <RemoteMusicLibrary 
         isAdmin={isAdmin}
-        songs={songs}
         onAddSong={handleAddSong}
         onDeleteSong={handleDeleteSong}
       />

@@ -22,19 +22,26 @@ interface MusicLibraryProps {
 
 const MusicLibrary: React.FC<MusicLibraryProps> = ({ 
   isAdmin = false,
-  songs: propSongs,
   onAddSong, 
   onDeleteSong 
 }) => {
-  const [songs, setSongs] = useState<Song[]>(propSongs || mockSongs);
+  const [songs, setSongs] = useState<Song[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Sync songs when propSongs changes
+  // Load songs from localStorage or use mock data
   useEffect(() => {
-    if (propSongs) {
-      setSongs(propSongs);
+    const savedSongs = localStorage.getItem('musicLibrarySongs');
+    if (savedSongs) {
+      try {
+        setSongs(JSON.parse(savedSongs));
+      } catch (error) {
+        console.error('Error loading songs:', error);
+        setSongs(mockSongs);
+      }
+    } else {
+      setSongs(mockSongs);
     }
-  }, [propSongs]);
+  }, []);
 
   const [sortField, setSortField] = useState<SortField>('title');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
